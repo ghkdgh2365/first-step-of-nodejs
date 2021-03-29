@@ -2,6 +2,29 @@ var http = require('http');
 const fs = require('fs');
 const url = require('url');
 
+function templateHTML(fileList, title, body){
+  let list = '';
+  for (var i =0; i < fileList.length; i++){
+    list += `<li><a href="/?id=` + `${fileList[i]}">` + `${fileList[i]}` + `</a></li>`;
+  }
+  return `
+    <!doctype html>
+    <html>
+    <head>
+      <title>${title}</title>
+      <meta charset="utf-8">
+    </head>
+    <body>
+      <h1><a href="/">WEB</a></h1>
+      <ul>
+        ${list}
+      </ul>
+      ${body}
+    </body>
+    </html>
+  `
+}
+
 var app = http.createServer(function(request,response){
     const _url = request.headers.host + request.url
     // const queryData = url.parse(_url, true).query;
@@ -13,64 +36,24 @@ var app = http.createServer(function(request,response){
     if (urlInfo.pathname === '3000/'){
       if (idValue === null){
         fs.readdir('./data', (error, fileList) => {
-          var list = '';
-          for (var i =0; i < fileList.length; i++){
-            list += `<li><a href="/?id=` + `${fileList[i]}">` + `${fileList[i]}` + `</a></li>`;
-          }
-          var template = `
-            <!doctype html>
-            <html>
-            <head>
-              <title>WEB1 - Hello World!</title>
-              <meta charset="utf-8">
-            </head>
-            <body>
-              <h1><a href="/">WEB</a></h1>
-              <ul>
-                ${list}
-              </ul>
-              <h2>HOME</h2>
-              <p><a href="https://www.w3.org/TR/html5/" target="_blank" title="html5 speicification">Hypertext Markup Language (HTML)</a> is the standard markup language for <strong>creating <u>web</u> pages</strong> and web applications.Web browsers receive HTML documents from a web server or from local storage and render them into multimedia web pages. HTML describes the structure of a web page semantically and originally included cues for the appearance of the document.
-              <img src="coding.jpg" width="100%">
-              </p><p style="margin-top:45px;">
-                Hello Node.js !
-              </p>
-            </body>
-            </html>
-          `;
+          const template = templateHTML(fileList, "welcome", "<h2>Hello Node.js</h2>");
           response.writeHead(200);
           response.end(template);
         })
       }
       else {
-        fs.readFile(`data/${idValue}`, 'utf-8', (err, data) => {
-          content = data
-          var template = `
-            <!doctype html>
-            <html>
-            <head>
-              <title>WEB1 - ${idValue}</title>
-              <meta charset="utf-8">
-            </head>
-            <body>
-              <h1><a href="/">WEB</a></h1>
-              <ul>
-                <li><a href="/?id=HTML">HTML</a></li>
-                <li><a href="/?id=CSS">CSS</a></li>
-                <li><a href="/?id=JavaScript">JavaScript</a></li>
-              </ul>
-              <h2>${idValue}</h2>
-              <p><a href="https://www.w3.org/TR/html5/" target="_blank" title="html5 speicification">Hypertext Markup Language (HTML)</a> is the standard markup language for <strong>creating <u>web</u> pages</strong> and web applications.Web browsers receive HTML documents from a web server or from local storage and render them into multimedia web pages. HTML describes the structure of a web page semantically and originally included cues for the appearance of the document.
-              <img src="coding.jpg" width="100%">
-              </p><p style="margin-top:45px;">
-                ${content}
-              </p>
-            </body>
-            </html>
-          `;
-          response.writeHead(200);
-          response.end(template);
-        }) 
+        fs.readdir('./data', (error, fileList) => {
+          let list = '';
+          for (var i =0; i < fileList.length; i++){
+            list += `<li><a href="/?id=` + `${fileList[i]}">` + `${fileList[i]}` + `</a></li>`;
+          }
+          fs.readFile(`data/${idValue}`, 'utf-8', (err, data) => {
+            content = data
+            const template = templateHTML(fileList, `WEB1 - ${idValue}`, content)
+            response.writeHead(200);
+            response.end(template);
+          })
+        })
       }
     }
     else{

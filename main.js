@@ -15,7 +15,7 @@ function templateHTML(fileList, title, body){
       <meta charset="utf-8">
     </head>
     <body>
-      <h1><a href="/">WEB</a></h1>
+      <h1><a href="/">WEB3</a></h1>
       <ul>
         ${list}
       </ul>

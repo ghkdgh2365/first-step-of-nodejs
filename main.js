@@ -1,5 +1,6 @@
 var http = require('http');
 const fs = require('fs');
+const qs = require('querystring');
 const url = require('url');
 
 function templateHTML(fileList, title, body){
@@ -66,7 +67,7 @@ var app = http.createServer(function(request,response){
         }
         fs.readFile(`data/${idValue}`, 'utf-8', (err, data) => {
           content = `
-            <form action="http://localhost:3000/process_create" method="post">
+            <form action="http://localhost:3000/create_process" method="post">
               <p><input tpye="text" name="title" placeholder="title"></p>
               <p>
                 <textarea name="description" placeholder="description"></textarea>
@@ -81,6 +82,26 @@ var app = http.createServer(function(request,response){
           response.end(template);
         })
       })
+    }
+    else if ( urlInfo.pathname === '3000/create_process'){
+      let body = '';
+      request.on('data', function(data){
+        body += data;
+        if (body.length > 1e6){
+          request.connection.destroy();
+        }
+      });
+      request.on('end', function(){
+        let post = qs.parse(body);
+        const title = post.title;
+        const description = post.description;
+        console.log(`post!@!`, post.title);
+        fs.writeFile(`data/${title}`, description, 'utf-8', (err) => {
+          console.log(`error message`, err);
+          response.writeHead(302, {Location: `/?id=${title}`});
+          response.end();
+        })
+      });
     }
     else{
       console.log(`??????`, urlInfo.pathname)

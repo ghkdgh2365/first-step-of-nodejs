@@ -3,7 +3,7 @@ const fs = require('fs');
 const qs = require('querystring');
 const url = require('url');
 
-function templateHTML(fileList, title, body){
+function templateHTML(fileList, title, body, control){
   let list = '';
   for (var i =0; i < fileList.length; i++){
     list += `<li><a href="/?id=` + `${fileList[i]}">` + `${fileList[i]}` + `</a></li>`;
@@ -19,8 +19,10 @@ function templateHTML(fileList, title, body){
       <h1><a href="/">WEB1</a></h1>
       <ul>
         ${list}
-        <li><a href="/create">create</a>
       </ul>
+      <hr/>
+      ${control}
+      <hr/>
       ${body}
     </body>
     </html>
@@ -38,20 +40,26 @@ var app = http.createServer(function(request,response){
     if (urlInfo.pathname === '3000/'){
       if (idValue === null){
         fs.readdir('./data', (error, fileList) => {
-          const template = templateHTML(fileList, "welcome", "<h2>Hello Node.js</h2>");
+          const template = templateHTML(
+            fileList, 
+            "welcome", 
+            "<h2>Hello Node.js</h2>",
+            `<a href="/create">create</a>`
+          );
           response.writeHead(200);
           response.end(template);
         })
       }
       else {
         fs.readdir('./data', (error, fileList) => {
-          let list = '';
-          for (var i =0; i < fileList.length; i++){
-            list += `<li><a href="/?id=` + `${fileList[i]}">` + `${fileList[i]}` + `</a></li>`;
-          }
           fs.readFile(`data/${idValue}`, 'utf-8', (err, data) => {
             content = data
-            const template = templateHTML(fileList, `WEB1 - ${idValue}`, content)
+            const template = templateHTML(
+              fileList, 
+              `WEB1 - ${idValue}`, 
+              content,
+              `<a href="/create">create</a> <a href="/update?id=${idValue}">update</a>`
+            )
             response.writeHead(200);
             response.end(template);
           })
@@ -61,14 +69,10 @@ var app = http.createServer(function(request,response){
     else if ( urlInfo.pathname === '3000/create') {
       console.log(urlInfo.pathname)
       fs.readdir('./data', (error, fileList) => {
-        let list = '';
-        for (var i =0; i < fileList.length; i++){
-          list += `<li><a href="/?id=` + `${fileList[i]}">` + `${fileList[i]}` + `</a></li>`;
-        }
         fs.readFile(`data/${idValue}`, 'utf-8', (err, data) => {
           content = `
-            <form action="http://localhost:3000/create_process" method="post">
-              <p><input tpye="text" name="title" placeholder="title"></p>
+            <form action="/create_process" method="post">
+              <p><input type="text" name="title" placeholder="title"></p>
               <p>
                 <textarea name="description" placeholder="description"></textarea>
               </p>
@@ -77,7 +81,12 @@ var app = http.createServer(function(request,response){
               </p>
             </form>
           `
-          const template = templateHTML(fileList, `WEB1 - ${idValue}`, content)
+          const template = templateHTML(
+            fileList, 
+            `WEB1 - ${idValue}`, 
+            content,
+            ''
+          )
           response.writeHead(200);
           response.end(template);
         })
@@ -102,6 +111,32 @@ var app = http.createServer(function(request,response){
           response.end();
         })
       });
+    }
+    else if(urlInfo.pathname === '3000/update') {
+      fs.readdir('./data', (error, fileList) => {
+        fs.readFile(`data/${idValue}`, 'utf-8', (err, data) => {
+          let content = `
+            <form action="/update_process" method="post">
+              <input type="hidden" name="id" value=${idValue}>
+              <p><input type="text" name="title" placeholder="title" value=${idValue}></p>
+              <p>
+                <textarea name="description" placeholder="description">${data}</textarea>
+              </p>
+              <p>
+                <input type="submit">
+              </p>
+            </form>
+          `
+          const template = templateHTML(
+            fileList, 
+            `WEB1 - ${idValue}`, 
+            content,
+            ``
+          )
+          response.writeHead(200);
+          response.end(template);
+        })
+      })
     }
     else{
       console.log(`??????`, urlInfo.pathname)

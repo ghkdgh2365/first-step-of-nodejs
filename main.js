@@ -138,6 +138,31 @@ var app = http.createServer(function(request,response){
         })
       })
     }
+    else if (urlInfo.pathname === `3000/update_process`) {
+      let body = '';
+      request.on('data', function(data){
+        body += data;
+        if (body.length > 1e6){
+          request.connection.destroy();
+        }
+      });
+      request.on('end', function(){
+        const post = qs.parse(body);
+        const id = post.id
+        const title = post.title;
+        const description = post.description;
+        console.log(`??!?!?!?!?`,post)
+        console.log(`post!@!`, id);
+        console.log(`post!@!`, post.title);
+        fs.rename(`data/${id}`, `data/${title}`, ()=> {
+          fs.writeFile(`data/${title}`, description, 'utf-8', (err) => {
+            console.log(`error message`, err);
+            response.writeHead(302, {Location: `/?id=${title}`});
+            response.end();
+          })
+        })
+      });
+    }
     else{
       console.log(`??????`, urlInfo.pathname)
       response.writeHead(404);

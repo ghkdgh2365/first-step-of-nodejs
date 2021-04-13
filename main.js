@@ -58,7 +58,13 @@ var app = http.createServer(function(request,response){
               fileList, 
               `WEB1 - ${idValue}`, 
               content,
-              `<a href="/create">create</a> <a href="/update?id=${idValue}">update</a>`
+              ` <a href="/create">create</a>
+                <a href="/update?id=${idValue}">update</a>
+                <form action="delete_process" method="post">
+                  <input type="hidden" name="id" value="${idValue}">
+                  <input type="submit" value="delete">
+                </form>
+              `
             )
             response.writeHead(200);
             response.end(template);
@@ -161,6 +167,25 @@ var app = http.createServer(function(request,response){
             response.end();
           })
         })
+      });
+    }
+    else if (urlInfo.pathname === `3000/delete_process`) {
+      let body = '';
+      request.on('data', function(data){
+        body += data;
+        if (body.length > 1e6){
+          request.connection.destroy();
+        }
+      });
+      request.on('end', function(){
+        const post = qs.parse(body);
+        const id = post.id;
+        fs.unlink(`data/${id}`, (error) => {
+          response.writeHead(302, {Location: `/`});
+          response.end();
+        })
+        console.log(`??!?!?!?!?`,post)
+        console.log(`post!@!`, id);
       });
     }
     else{

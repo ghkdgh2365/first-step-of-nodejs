@@ -3,30 +3,32 @@ const fs = require('fs');
 const qs = require('querystring');
 const url = require('url');
 
-function templateHTML(fileList, title, body, control){
-  let list = '';
-  for (var i =0; i < fileList.length; i++){
-    list += `<li><a href="/?id=` + `${fileList[i]}">` + `${fileList[i]}` + `</a></li>`;
+const templateFunction = {
+  HTML: function (fileList, title, body, control){
+    let list = '';
+    for (var i =0; i < fileList.length; i++){
+      list += `<li><a href="/?id=` + `${fileList[i]}">` + `${fileList[i]}` + `</a></li>`;
+    }
+    return `
+      <!doctype html>
+      <html>
+      <head>
+        <title>${title}</title>
+        <meta charset="utf-8">
+      </head>
+      <body>
+        <h1><a href="/">WEB1</a></h1>
+        <ul>
+          ${list}
+        </ul>
+        <hr/>
+        ${control}
+        <hr/>
+        ${body}
+      </body>
+      </html>
+    `
   }
-  return `
-    <!doctype html>
-    <html>
-    <head>
-      <title>${title}</title>
-      <meta charset="utf-8">
-    </head>
-    <body>
-      <h1><a href="/">WEB1</a></h1>
-      <ul>
-        ${list}
-      </ul>
-      <hr/>
-      ${control}
-      <hr/>
-      ${body}
-    </body>
-    </html>
-  `
 }
 
 var app = http.createServer(function(request,response){
@@ -40,7 +42,7 @@ var app = http.createServer(function(request,response){
     if (urlInfo.pathname === '3000/'){
       if (idValue === null){
         fs.readdir('./data', (error, fileList) => {
-          const template = templateHTML(
+          const template = templateFunction.HTML(
             fileList, 
             "welcome", 
             "<h2>Hello Node.js</h2>",
@@ -54,7 +56,7 @@ var app = http.createServer(function(request,response){
         fs.readdir('./data', (error, fileList) => {
           fs.readFile(`data/${idValue}`, 'utf-8', (err, data) => {
             content = data
-            const template = templateHTML(
+            const template = templateFunction.HTML(
               fileList, 
               `WEB1 - ${idValue}`, 
               content,
@@ -87,7 +89,7 @@ var app = http.createServer(function(request,response){
               </p>
             </form>
           `
-          const template = templateHTML(
+          const template = templateFunction.HTML(
             fileList, 
             `WEB1 - ${idValue}`, 
             content,
@@ -133,7 +135,7 @@ var app = http.createServer(function(request,response){
               </p>
             </form>
           `
-          const template = templateHTML(
+          const template = templateFunction.HTML(
             fileList, 
             `WEB1 - ${idValue}`, 
             content,
